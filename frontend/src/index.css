@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink: #0f1b2d;
+  --color-navy-900: #0b2545;
+  --color-navy-800: #12325e;
+  --color-navy-700: #1b4479;
+  --color-navy-100: #e5ecf6;
+  --color-navy-50: #f3f6fb;
+  --color-saffron-500: #e89b1c;
+  --color-saffron-100: #fdf1dc;
+  --color-paper: #f7f8fa;
+  --color-rule: #dde3ea;
+}
+
+@layer base {
+  html {
+    color: var(--color-ink);
+    background: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply font-sans text-[15px] leading-relaxed;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-saffron-500);
+    outline-offset: 2px;
+  }
+}
+
+@utility card {
+  @apply rounded-lg border border-rule bg-white;
+}
+@utility eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.08em] text-slate-500;
+}
+@utility input {
+  @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-ink shadow-xs
+    placeholder:text-slate-400 focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-100;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition
+    disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-navy-800 text-white hover:bg-navy-900;
+}
+@utility btn-secondary {
+  @apply btn border border-slate-300 bg-white text-ink hover:bg-slate-50;
+}

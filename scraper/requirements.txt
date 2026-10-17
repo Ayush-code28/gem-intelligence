@@ -1,0 +1,4 @@
+# Runtime dependencies for the collector (pinned).
+requests==2.34.2
+psycopg[binary]==3.3.6
+pydantic==2.14.1

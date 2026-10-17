@@ -1,0 +1,117 @@
+name: Daily collection
+
+on:
+  schedule:
+    # 01:00 UTC = 06:30 IST. GitHub may start scheduled runs late (sometimes by much more
+    # than an hour) or skip them under load; the dashboard therefore shows the actual time
+    # of the last successful run, not this schedule.
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to run"
+        type: choice
+        default: collect
+        options:
+          - collect            # live sources in ENABLED_SOURCES
+          - import-synthetic   # load clearly labelled synthetic demo data
+          - purge-synthetic    # delete all synthetic demo data
+      max_pages:
+        description: "collect: override MAX_PAGES_PER_SOURCE (1-500, blank = default)"
+        required: false
+        default: ""
+      dry_run:
+        description: "collect: fetch and validate only; write nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never run two collections at once; a queued run waits instead of cancelling.
+  group: daily-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      # Secrets are masked by GitHub; the collector never prints them.
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Non-secret configuration lives in repository *variables* (Settings → Variables).
+      ENABLED_SOURCES: ${{ vars.ENABLED_SOURCES }}
+      GEM_LIVE_ACCESS_APPROVED: ${{ vars.GEM_LIVE_ACCESS_APPROVED }}
+      GEM_REPRODUCTION_PERMISSION_CONFIRMED: ${{ vars.GEM_REPRODUCTION_PERMISSION_CONFIRMED }}
+      COLLECTOR_USER_AGENT: ${{ vars.COLLECTOR_USER_AGENT }}
+      REQUEST_DELAY_SECONDS: ${{ vars.REQUEST_DELAY_SECONDS }}
+      MAX_PAGES_PER_SOURCE: ${{ inputs.max_pages || vars.MAX_PAGES_PER_SOURCE }}
+      REFRESH_WINDOW_DAYS: ${{ vars.REFRESH_WINDOW_DAYS }}
+      REFRESH_MAX_PAGES: ${{ vars.REFRESH_MAX_PAGES }}
+      COLLECTION_TRIGGER: ${{ github.event_name }}
+      MODE: ${{ inputs.mode || 'collect' }}
+      DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install pinned dependencies
+        run: python -m pip install --disable-pip-version-check -r scraper/requirements.txt
+
+      - name: Check required secrets
+        run: |
+          if [ -z "$DATABASE_URL" ] && [ -z "$DRY_RUN" ]; then
+            echo "::error title=Missing secret::DATABASE_URL repository secret is not set."
+            exit 3
+          fi
+
+      - name: Run pipeline
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          # Exit codes: 0 success/skipped, 1 failed, 2 partial (some sources failed), 3 config error.
+          case "$MODE" in
+            collect)
+              python -m scraper $DRY_RUN --summary-file logs/summary.md 2>&1 | tee logs/collector.jsonl ;;
+            import-synthetic)
+              python -m scraper.synthetic --out logs/synthetic_demo.json
+              python -m scraper --import-file logs/synthetic_demo.json --origin synthetic \
+                --summary-file logs/summary.md 2>&1 | tee logs/collector.jsonl ;;
+            purge-synthetic)
+              python -m scraper --purge-synthetic --yes 2>&1 | tee logs/collector.jsonl ;;
+            *)
+              echo "::error::Unknown mode $MODE"; exit 3 ;;
+          esac
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          {
+            echo "Mode: \`$MODE\`"
+            echo
+            if [ -f logs/summary.md ]; then cat logs/summary.md; else echo "No run summary was produced — see the job log."; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$MODE" = "collect" ] && [ -f logs/summary.md ] && grep -q 'Collection run `skipped`' logs/summary.md; then
+            msg="No live data source is enabled, so no GeM data was collected. GeM blocks automated clients (docs/SOURCE_FEASIBILITY.md); configure an approved source to enable live collection."
+            echo "::warning title=No live source::$msg"
+            { echo; echo "> **$msg**"; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Keep execution logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: collection-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 30
+          if-no-files-found: ignore

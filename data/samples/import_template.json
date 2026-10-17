@@ -1,0 +1,18 @@
+{
+  "notice": "Template only. Example rows are placeholders, not real listings.",
+  "records": [
+    {
+      "source_id": "EXAMPLE-0001",
+      "bid_number": "EXAMPLE/2030/B/000001",
+      "title": "[EXAMPLE ROW - replace] Office chairs",
+      "ministry": "Example Ministry",
+      "department": "Example Department",
+      "category": "Products",
+      "listing_type": "Bid",
+      "quantity": 25,
+      "published_at": "2030-01-10T10:00:00+05:30",
+      "deadline": "2030-01-20T17:00:00+05:30",
+      "url": null
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<!DOCTYPE html><html><head><title>Synthetic listing shell</title></head><body>
+<div id="bidCard"></div>
+<script>
+function loadBids(page = null) {
+    $.ajax({ type: 'POST', url: 'https://bidplus.gem.gov.in/all-bids-data',
+        data: {'payload': JSON.stringify(postdata), 'csrf_bd_gem_nk': 'abcdef0123456789abcdef0123456789'} });
+}
+</script></body></html>

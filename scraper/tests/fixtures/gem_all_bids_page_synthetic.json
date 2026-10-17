@@ -1,0 +1,56 @@
+{
+  "status": 1,
+  "code": 200,
+  "message": "synthetic fixture",
+  "response": {
+    "response": {
+      "numFound": 3,
+      "start": 0,
+      "docs": [
+        {
+          "id": "900000001",
+          "b_id": [900000001],
+          "b_bid_number": ["GEM/TEST/B/000001"],
+          "b_category_name": ["Synthetic Office Chairs"],
+          "bd_category_name": ["Synthetic Office Chairs"],
+          "bbt_title": null,
+          "b_type": [0],
+          "b_bid_type": [1],
+          "b_eval_type": [0],
+          "b_total_quantity": [25],
+          "ba_official_details_minName": ["Synthetic Ministry of Examples"],
+          "ba_official_details_deptName": ["Department of Test Fixtures"],
+          "final_start_date_sort": ["2030-01-10T10:00:00Z"],
+          "final_end_date_sort": ["2030-01-20T17:00:00Z"]
+        },
+        {
+          "id": "900000002",
+          "b_id": [900000002],
+          "b_bid_number": ["GEM/TEST/R/000002"],
+          "b_category_name": ["Synthetic Facility Cleaning Service"],
+          "bd_category_name": null,
+          "bbt_title": "Lot A",
+          "b_type": [1],
+          "b_bid_type": [2],
+          "b_eval_type": [1],
+          "b_total_quantity": [1],
+          "ba_official_details_minName": null,
+          "ba_official_details_deptName": ["Synthetic Municipal Board"],
+          "final_start_date_sort": ["2030-01-09T09:30:00Z"],
+          "final_end_date_sort": ["not-a-date"]
+        },
+        {
+          "id": "900000003",
+          "b_id": [900000003],
+          "b_bid_number": ["GEM/TEST/R/000003"],
+          "b_category_name": null,
+          "bd_category_name": null,
+          "b_type": [0],
+          "b_bid_type": [5],
+          "final_start_date_sort": ["2030-01-08T08:00:00Z"],
+          "final_end_date_sort": ["2030-01-18T08:00:00Z"]
+        }
+      ]
+    }
+  }
+}
